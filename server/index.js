@@ -3,7 +3,7 @@ import http from "http";
 import { Server } from "socket.io";
 import cors from "cors";
 import dotenv from "dotenv";
-import { executeCode } from "./piston.js";
+import { executeCode } from "./executor.js";
 
 dotenv.config();
 
@@ -57,15 +57,8 @@ io.on("connection", (socket) => {
 
   // Run code using Piston API
   socket.on("run-code", async ({ roomId, language, code }) => {
-    try {
-      const result = await executeCode(language, code);
-      const output = result.run.output || result.run.stderr || "No output";
-
-      // Send output to everyone in the room
-      io.to(roomId).emit("code-output", output);
-    } catch (err) {
-      io.to(roomId).emit("code-output", "Error executing code");
-    }
+    const result = await executeCode(language, code);
+    io.to(roomId).emit("code-output", result.output);
   });
 
   // Handle disconnect

@@ -1,36 +1,37 @@
 import axios from "axios";
 
 const PISTON_API = "https://emkc.org/api/v2/piston/execute";
+const RUNTIMES_API = "https://emkc.org/api/v2/piston/runtimes";
 
-// Map common language names to Piston's expected version format
-const LANGUAGE_VERSIONS = {
-  javascript: "18.15.0",
-  python: "3.10.0",
-  java: "15.0.2",
-  cpp: "10.2.0",
-  c: "10.2.0",
-  csharp: "6.12.0",
-  go: "1.16.2",
-  ruby: "3.0.1",
-  rust: "1.68.2",
-  php: "8.2.3",
+let cachedRuntimes = null;
+
+const getRuntimes = async () => {
+  if (cachedRuntimes) return cachedRuntimes;
+  const res = await axios.get(RUNTIMES_API);
+  cachedRuntimes = res.data;
+  return cachedRuntimes;
 };
 
 export const executeCode = async (language, code) => {
   try {
+    const runtimes = await getRuntimes();
+    const runtime = runtimes.find((r) => r.language === language);
+
+    if (!runtime) {
+      throw new Error(`Language "${language}" not supported by Piston`);
+    }
+
     const response = await axios.post(PISTON_API, {
-      language: language,
-      version: LANGUAGE_VERSIONS[language] || "*",
-      files: [
-        {
-          content: code,
-        },
-      ],
+      language: runtime.language,
+      version: runtime.version,
+      files: [{ content: code }],
     });
 
     return response.data;
   } catch (error) {
-    console.error("Piston API error:", error.message);
+    console.error("FULL ERROR:", error.toString());
+    console.error("URL CALLED:", error.config?.url);
+    console.error("RESPONSE DATA:", JSON.stringify(error.response?.data));
     throw new Error("Code execution failed");
   }
 };
