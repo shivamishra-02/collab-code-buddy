@@ -3,7 +3,7 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { socket } from "../socket.js";
 import Editor from "../components/Editor.jsx";
 import Output from "../components/Output.jsx";
-import UserList from "../components/UserList.jsx";
+import BuddyBar from "../components/BuddyBar.jsx";
 
 function Room() {
   const { roomId } = useParams();
@@ -17,44 +17,37 @@ function Room() {
   const [output, setOutput] = useState("");
   const [users, setUsers] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  // Flag to avoid emitting code-change when we receive an update from server
   const isRemoteUpdate = useRef(false);
 
   useEffect(() => {
-    // If user directly opened room URL without joining from Home, send back
     if (!username) {
       navigate("/");
       return;
     }
 
-    // Connect socket and join room
     socket.connect();
     socket.emit("join-room", { roomId, username });
 
-    // Listen for code updates from other users
     socket.on("code-update", (newCode) => {
       isRemoteUpdate.current = true;
       setCode(newCode);
     });
 
-    // Listen for language changes from other users
     socket.on("language-update", (newLanguage) => {
       setLanguage(newLanguage);
     });
 
-    // Listen for updated user list
     socket.on("user-list", (userList) => {
       setUsers(userList);
     });
 
-    // Listen for code execution output
     socket.on("code-output", (result) => {
       setOutput(result);
       setIsRunning(false);
     });
 
-    // Cleanup on unmount
     return () => {
       socket.off("code-update");
       socket.off("language-update");
@@ -64,11 +57,9 @@ function Room() {
     };
   }, [roomId, username, navigate]);
 
-  // Handle local code changes
   const handleCodeChange = (newCode) => {
     setCode(newCode);
 
-    // If this change came from a remote update, don't re-broadcast it
     if (isRemoteUpdate.current) {
       isRemoteUpdate.current = false;
       return;
@@ -77,14 +68,12 @@ function Room() {
     socket.emit("code-change", { roomId, code: newCode });
   };
 
-  // Handle language change
   const handleLanguageChange = (e) => {
     const newLanguage = e.target.value;
     setLanguage(newLanguage);
     socket.emit("language-change", { roomId, language: newLanguage });
   };
 
-  // Run code
   const handleRunCode = () => {
     setIsRunning(true);
     setOutput("Running...");
@@ -93,48 +82,41 @@ function Room() {
 
   const copyRoomId = () => {
     navigator.clipboard.writeText(roomId);
-    alert("Room ID copied!");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
   };
 
   return (
     <div style={styles.container}>
       <div style={styles.topBar}>
         <div style={styles.roomInfo}>
-          <span>Room ID: {roomId}</span>
-          <button onClick={copyRoomId} style={styles.copyButton}>
-            Copy
+          <span style={styles.roomLabel}>ROOM</span>
+          <button onClick={copyRoomId} style={styles.roomCode} title="Click to copy">
+            {roomId}
+          </button>
+          {copied && <span style={styles.copiedTag}>copied!</span>}
+        </div>
+
+        <div style={styles.controls}>
+          <select
+            value={language}
+            onChange={handleLanguageChange}
+            style={styles.select}
+          >
+            <option value="javascript">JavaScript</option>
+            <option value="python">Python</option>
+          </select>
+
+          <button onClick={handleRunCode} style={styles.runButton} disabled={isRunning}>
+            {isRunning ? "Running…" : "▶ Run"}
           </button>
         </div>
-
-        <select
-          value={language}
-          onChange={handleLanguageChange}
-          style={styles.select}
-        >
-          <option value="javascript">JavaScript</option>
-          <option value="python">Python</option>
-          <option value="java">Java</option>
-          <option value="cpp">C++</option>
-          <option value="c">C</option>
-          <option value="go">Go</option>
-          <option value="rust">Rust</option>
-          <option value="ruby">Ruby</option>
-          <option value="php">PHP</option>
-        </select>
-
-        <button onClick={handleRunCode} style={styles.runButton} disabled={isRunning}>
-          {isRunning ? "Running..." : "Run Code"}
-        </button>
       </div>
 
-      <div style={styles.mainArea}>
-        <div style={styles.sidebar}>
-          <UserList users={users} />
-        </div>
+      <BuddyBar users={users} />
 
-        <div style={styles.editorArea}>
-          <Editor code={code} language={language} onChange={handleCodeChange} />
-        </div>
+      <div style={styles.mainArea}>
+        <Editor code={code} language={language} onChange={handleCodeChange} />
       </div>
 
       <Output output={output} />
@@ -147,61 +129,73 @@ const styles = {
     height: "100vh",
     display: "flex",
     flexDirection: "column",
-    background: "#1e1e1e",
+    background: "var(--bg-deep)",
   },
   topBar: {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: "10px 20px",
-    background: "#252526",
-    borderBottom: "1px solid #3c3c3c",
+    padding: "12px 20px",
+    background: "var(--bg-panel)",
+    borderBottom: "1px solid var(--border)",
+    flexWrap: "wrap",
+    gap: "10px",
   },
   roomInfo: {
     display: "flex",
     alignItems: "center",
     gap: "10px",
-    color: "#9cdcfe",
-    fontSize: "14px",
   },
-  copyButton: {
-    padding: "4px 10px",
-    fontSize: "12px",
+  roomLabel: {
+    fontSize: "11px",
+    color: "var(--text-dim)",
+    letterSpacing: "1.5px",
+    fontWeight: 600,
+  },
+  roomCode: {
+    padding: "5px 12px",
+    fontSize: "14px",
+    fontWeight: 700,
+    letterSpacing: "3px",
+    background: "var(--bg-deep)",
+    color: "var(--accent-blue)",
+    border: "1px solid var(--border)",
+    borderRadius: "6px",
     cursor: "pointer",
-    background: "#3c3c3c",
-    color: "#fff",
-    border: "none",
-    borderRadius: "4px",
+    fontFamily: "var(--font-mono)",
+  },
+  copiedTag: {
+    fontSize: "11px",
+    color: "var(--accent-green)",
+  },
+  controls: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
   },
   select: {
-    padding: "5px 10px",
-    background: "#1e1e1e",
+    padding: "8px 12px",
+    background: "var(--bg-deep)",
     color: "#fff",
-    border: "1px solid #3c3c3c",
-    borderRadius: "4px",
+    border: "1px solid var(--border)",
+    borderRadius: "6px",
+    fontFamily: "var(--font-mono)",
+    fontSize: "13px",
   },
   runButton: {
-    padding: "8px 20px",
-    background: "#0e639c",
-    color: "#fff",
+    padding: "9px 22px",
+    background: "var(--accent-green)",
+    color: "#0d1117",
     border: "none",
-    borderRadius: "4px",
+    borderRadius: "6px",
     cursor: "pointer",
-    fontWeight: "bold",
+    fontWeight: 700,
+    fontFamily: "var(--font-display)",
+    fontSize: "13px",
   },
   mainArea: {
     flex: 1,
-    display: "flex",
     overflow: "hidden",
-  },
-  sidebar: {
-    width: "180px",
-    background: "#252526",
-    borderRight: "1px solid #3c3c3c",
-    padding: "10px",
-  },
-  editorArea: {
-    flex: 1,
   },
 };
 

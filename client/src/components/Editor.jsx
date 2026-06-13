@@ -17,6 +17,7 @@ function Editor({ code, language, onChange }) {
         minimap: { enabled: false },
         wordWrap: "on",
         automaticLayout: true,
+        fontFamily: "JetBrains Mono, monospace",
       }}
     />
   );
