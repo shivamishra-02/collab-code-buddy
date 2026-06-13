@@ -20,55 +20,66 @@ const io = new Server(server, {
   },
 });
 
-// Keep track of users in each room: { roomId: { socketId: username } }
+// Keep track of users in each room: { roomId: { socketId: { username, color } } }
 const rooms = {};
+
+// Fun color palette assigned to each user's "buddy" character
+const BUDDY_COLORS = [
+  "#f78166", // warm orange
+  "#58a6ff", // blue
+  "#3fb950", // green
+  "#d29922", // yellow
+  "#bc8cff", // purple
+  "#ff7b9c", // pink
+  "#39c5cf", // cyan
+  "#ffa657", // amber
+];
+
+const getBuddyColor = (roomId) => {
+  const usedCount = rooms[roomId] ? Object.keys(rooms[roomId]).length : 0;
+  return BUDDY_COLORS[usedCount % BUDDY_COLORS.length];
+};
 
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  // When a user joins a room
   socket.on("join-room", ({ roomId, username }) => {
     socket.join(roomId);
 
     if (!rooms[roomId]) {
       rooms[roomId] = {};
     }
-    rooms[roomId][socket.id] = username;
 
-    // Save info on socket object for later use
+    const color = getBuddyColor(roomId);
+    rooms[roomId][socket.id] = { username, color };
+
     socket.roomId = roomId;
     socket.username = username;
 
-    // Send updated user list to everyone in the room
     io.to(roomId).emit("user-list", Object.values(rooms[roomId]));
 
     console.log(`${username} joined room ${roomId}`);
   });
 
-  // When a user types code, broadcast to others in the same room
   socket.on("code-change", ({ roomId, code }) => {
     socket.to(roomId).emit("code-update", code);
   });
 
-  // When a user changes the selected language
   socket.on("language-change", ({ roomId, language }) => {
     socket.to(roomId).emit("language-update", language);
   });
 
-  // Run code using Piston API
   socket.on("run-code", async ({ roomId, language, code }) => {
     const result = await executeCode(language, code);
     io.to(roomId).emit("code-output", result.output);
   });
 
-  // Handle disconnect
   socket.on("disconnect", () => {
     const { roomId, username } = socket;
 
     if (roomId && rooms[roomId]) {
       delete rooms[roomId][socket.id];
 
-      // Remove room entry if empty
       if (Object.keys(rooms[roomId]).length === 0) {
         delete rooms[roomId];
       } else {

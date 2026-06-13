@@ -8,12 +8,11 @@ import { v4 as uuidv4 } from "uuid";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TEMP_DIR = path.join(__dirname, "temp");
 
-// Ensure temp directory exists
 if (!existsSync(TEMP_DIR)) {
   await mkdir(TEMP_DIR);
 }
 
-const TIMEOUT_MS = 7000; // 7 seconds max execution time
+const TIMEOUT_MS = 7000;
 
 const LANGUAGE_CONFIG = {
   javascript: {
@@ -40,21 +39,17 @@ export const executeCode = (language, code) => {
     const filePath = path.join(TEMP_DIR, fileName);
 
     try {
-      // Write code to a temp file
       await writeFile(filePath, code);
 
       const command = config.command(filePath);
 
       exec(
         command,
-        { timeout: TIMEOUT_MS, maxBuffer: 1024 * 1024 }, // 1MB max output
+        { timeout: TIMEOUT_MS, maxBuffer: 1024 * 1024 },
         async (error, stdout, stderr) => {
-          // Clean up temp file
           try {
             await unlink(filePath);
-          } catch (e) {
-            // ignore cleanup errors
-          }
+          } catch (e) {}
 
           if (error) {
             if (error.killed) {
