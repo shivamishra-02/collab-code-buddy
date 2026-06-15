@@ -1,10 +1,30 @@
+<div align="center">
+
 # 🤖 Collab Code Buddy
+
+### Real-time collaborative code editor — code together, debug together, ship together.
+
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://collab-code-buddy.vercel.app/)
+[![Backend](https://img.shields.io/badge/Backend-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://collab-code-buddy.onrender.com/)
+[![GitHub](https://img.shields.io/badge/GitHub-Repo-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/shivamishra-02/collab-code-buddy)
+
+![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=node.js&logoColor=white)
+![Socket.IO](https://img.shields.io/badge/Socket.IO-010101?style=flat-square&logo=socket.io&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)
+![Monaco Editor](https://img.shields.io/badge/Monaco%20Editor-007ACC?style=flat-square&logo=visualstudiocode&logoColor=white)
+
+</div>
+
+---
 
 > **Don't feel like coding alone? Bring your friends in!**
 >
 > Whether it's DSA practice, interview prep, or just building something fun — spin up a room on **Collab Code Buddy**, share a 6-character code with your friends, and code together in real time. Write, run, and debug code side by side — way more fun (and motivating) than grinding solo. Create a room and get started! 🚀
 
-![Home Page](./home.png)
+<div align="center">
+  <img src="./home.png" alt="Home Page" width="800"/>
+</div>
 
 ---
 
@@ -17,7 +37,9 @@
 - **Language switcher** — switch between JS and Python instantly, synced for everyone in the room
 - **Zero setup for users** — just enter a name and room code, and start coding
 
-![Code Editor with Buddies](./buddy_coding.png)
+<div align="center">
+  <img src="./buddy_coding.png" alt="Code Editor with Buddies" width="800"/>
+</div>
 
 ---
 
@@ -37,7 +59,9 @@
 
 ## 🏗️ Architecture
 
-![Architecture Diagram](./collab_code_buddy_architecture.png)
+<div align="center">
+  <img src="./diagram.png" alt="Architecture Diagram" width="800"/>
+</div>
 
 **High-level flow:**
 
@@ -115,9 +139,11 @@ This project is deployed across **two separate platforms**:
 - Framework preset: Vite (auto-detected)
 - Environment variable: `VITE_SERVER_URL` = the Render backend URL
 
-**Live links:**
-- **App:** https://collab-code-buddy.vercel.app/
-- **Backend:** https://collab-code-buddy.onrender.com/
+<div align="center">
+
+### 🔗 [**Try it live →**](https://collab-code-buddy.vercel.app/)
+
+</div>
 
 ---
 
@@ -133,8 +159,8 @@ This project is deployed across **two separate platforms**:
 
 Built with ☕ and a lot of late-night debugging by **Shivam Mishra**.
 
-- **GitHub:** [shivamishra-02](https://github.com/shivamishra-02)
-- **LinkedIn:** [Shivam Mishra](https://www.linkedin.com/in/shivam-mishra-3a741b253/)
+[![GitHub](https://img.shields.io/badge/GitHub-shivamishra--02-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/shivamishra-02)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Shivam%20Mishra-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/shivam-mishra-3a741b253/)
 
 If you found this project useful, drop a ⭐ — and if you spot a bug or have a feature idea, feel free to open an issue!
 
